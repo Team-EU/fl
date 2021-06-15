@@ -23,4 +23,5 @@ if __name__ == "__main__":
     client = FLClient('http://localhost:5000')
     data = dataloader()
     for epoch in range(200):
+        client.pull(round=epoch)
         client.run(data)

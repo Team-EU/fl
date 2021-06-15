@@ -1,7 +1,7 @@
 import dill
 import threading
 from flask import abort
-from flask import request, send_file, Response
+from flask import request, send_file, jsonify, Response
 from flask import current_app
 
 sem = threading.Semaphore()
@@ -26,15 +26,20 @@ def run_aggregation_step(fl_module, results, path_format):
 
 
 def add_model_communication(app):
-    @app.route('/model')
-    def model():
+    @app.route('/round')
+    def get_round():
+        """ Return the current round """
         sem.acquire()
         current_round = current_app.config['MODEL_OBJ']._round
         sem.release()
+        return jsonify(round=current_round)
 
-        if current_round != int(request.args['round']):
-            abort(404)
-
+    @app.route('/model')
+    def get_model():
+        """ Return the current model """
+        sem.acquire()
+        current_round = current_app.config['MODEL_OBJ']._round
+        sem.release()
         return send_file(current_app.config['MODEL_PATH'].format(current_round))
 
     @app.route('/upload', methods=['POST'])

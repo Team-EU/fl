@@ -1,6 +1,6 @@
 import os
-import fl_common as fl
-from fl_server import create_app
+import fl
+from fl.server import create_app
 
 import torch
 import torch.nn as nn

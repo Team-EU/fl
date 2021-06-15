@@ -1,5 +1,5 @@
 import os
-from fl_client import FLClient
+from fl.client import FLClient
 
 
 def dataloader():

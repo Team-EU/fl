@@ -28,7 +28,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--classes', type=int, nargs='+', help='class labels for non iid tests')
     parser.add_argument('--host', help='server host', default='localhost')
-    parser.add_argument('--port', help='server host', default='5000')
+    parser.add_argument('--port', help='server port', default='5000')
     args = parser.parse_args()
     client = FLClient(f'http://{args.host}:{args.port}')
     data = dataloader(args.classes)

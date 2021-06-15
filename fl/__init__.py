@@ -1,4 +1,5 @@
 import torch
+import inspect
 
 __all__ = ['Module']
 
@@ -19,20 +20,81 @@ class Module(torch.nn.Module):
         super().__init__()
         self._round = 0
 
-    def client_setup(self):
-        pass
+        # setup
+        self._infer = None
+        self._server_setup = None
+        self._client_setup = None
 
-    def training_step(self, train_loader):
-        raise NotImplementedError()
+        # main procedures
+        self._training_step = None
+        self._aggregation_step = None
 
-    def on_training_end(self):
-        pass
+        # hooks
+        self._on_training_start = None
+        self._on_aggregation_start = None
+        self._on_training_end = None
+        self._on_aggregation_end = None
 
-    def aggregation_step(self, results):
-        raise NotImplementedError()
+    def forward(self, *x, **y):
+        return self._infer(self, *x, **y)
 
-    def on_aggregation_end(self):
-        pass
+    def init(self, func):
+        argspec = inspect.getfullargspec(func)
+        assert argspec.args == ['self']
+        func(self)
+        return func
+
+    def infer(self, func):
+        self._infer = func
+        return func
+
+    def server_setup(self, func):
+        argspec = inspect.getfullargspec(func)
+        assert argspec.args == ['self']
+        self._server_setup = func
+        return func
+
+    def client_setup(self, func):
+        argspec = inspect.getargspec(func)
+        assert argspec.args == ['self']
+        self._client_setup = func
+        return func
+
+    def training_step(self, func):
+        argspec = inspect.getfullargspec(func)
+        assert argspec.args == ['self', 'dataloader']
+        self._training_step = func
+        return func
+
+    def aggregation_step(self, func):
+        argspec = inspect.getfullargspec(func)
+        assert argspec.args == ['self', 'results']
+        self._aggregation_step = func
+        return func
+
+    def on_training_start(self, func):
+        argspec = inspect.getfullargspec(func)
+        assert argspec.args == ['self']
+        self._on_training_start = func
+        return func
+
+    def on_training_end(self, func):
+        argspec = inspect.getfullargspec(func)
+        assert argspec.args == ['self']
+        self._on_training_end = func
+        return func
+
+    def on_aggregation_start(self, func):
+        argspec = inspect.getfullargspec(func)
+        assert argspec.args == ['self']
+        self._on_aggregation_start = func
+        return func
+
+    def on_aggregation_end(self, func):
+        argspec = inspect.getfullargspec(func)
+        assert argspec.args == ['self']
+        self._on_aggregation_end = func
+        return func
 
     def count_params(self):
         modes = ['all', 'trainable', 'non-trainable']

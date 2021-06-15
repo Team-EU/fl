@@ -112,7 +112,7 @@ if __name__ == "__main__":
     print("#.train_iter:", len(train_loader))
     print("#.valid_iter:", len(valid_loader))
 
-    configure("runs/normal")
+    configure("runs/reference")
 
     for epoch in range(epochs):
         train_loss = train_loop(net, criterion, optimizer, train_loader)

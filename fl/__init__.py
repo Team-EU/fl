@@ -1,5 +1,7 @@
 import torch
 
+__all__ = ['Module']
+
 
 def count_params(model, mode='all'):
     if mode == 'all':

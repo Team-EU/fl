@@ -1,5 +1,5 @@
 import os
-from fl_common import Module
+import fl_common as fl
 from fl_server import create_app
 
 import torch
@@ -8,7 +8,8 @@ import torchvision
 import torchvision.transforms as transforms
 from tensorboard_logger import configure, log_value
 
-fl_module = Module()
+fl_module = fl.Module()
+
 
 @fl_module.init
 def init(self):
@@ -37,7 +38,7 @@ def infer(self, x):
 
 @fl_module.server_setup
 def server_setup(self):
-    configure("runs/run-1234")
+    configure("runs/server1")
 
 
 @fl_module.on_training_start
@@ -49,6 +50,7 @@ def on_training_start(self):
 
 @fl_module.training_step
 def training_step(self, dataloader):
+    self.train()
     for inputs, labels in dataloader:
         inputs = inputs.to('cuda')
         labels = labels.to('cuda')
@@ -79,6 +81,8 @@ def on_aggregation_end(self):
     testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
     testloader = torch.utils.data.DataLoader(testset, batch_size=128, shuffle=False, num_workers=os.cpu_count())
 
+    self.eval()
+    loss = 0
     correct = 0
     total = 0
 
@@ -88,11 +92,14 @@ def on_aggregation_end(self):
             labels = labels.to('cuda')
 
             outputs = self(images)
+            loss += self.criterion(outputs, labels).item()
+
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
-    log_value('acc', correct / total, step=self._round)
+    log_value('valid/loss', loss / len(testloader), step=self._round)
+    log_value('valid/acc', correct / total, step=self._round)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "../fl-client"
+		},
+		{
+			"path": "../fl-server"
+		},
+		{
+			"path": "../fl-common"
+		},
+		{
+			"path": "../fl-tests"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {}
+}

@@ -3,7 +3,6 @@ from flask import render_template
 
 server_config_list = [
     'NUM_REQUESTS',
-    'NUM_REQUESTS_PER_CLIENT',
     'ROUND_TIMEOUT',
 ]
 

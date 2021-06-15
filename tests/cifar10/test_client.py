@@ -1,8 +1,9 @@
 import os
 from fl.client import FLClient
+import argparse
 
 
-def dataloader():
+def dataloader(classes = None):
     import torch
     import torchvision as tv
     transform = tv.transforms.Compose([
@@ -15,13 +16,20 @@ def dataloader():
     ])
     dataset = tv.datasets.CIFAR10(
         root='./data', train=True, download=True, transform=transform)
+    if classes:
+        sidx = [idx for idx, t in enumerate(dataset.targets) if t in classes]
+        dataset = torch.utils.data.Subset(dataset, sidx)
+    print(len(dataset))
     return torch.utils.data.DataLoader(
         dataset, batch_size=128, shuffle=True, num_workers=os.cpu_count(), pin_memory=True)
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--classes', type=int, nargs='+', help='class labels for non iid tests')
+    args = parser.parse_args()
     client = FLClient('http://localhost:5000')
-    data = dataloader()
+    data = dataloader(args.classes)
     for epoch in range(200):
         client.pull(round=epoch)
         client.run(data)

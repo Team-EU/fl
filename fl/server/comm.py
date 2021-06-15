@@ -51,11 +51,15 @@ def add_model_communication(app):
         current_app.config['RECEIVED_RESULTS'].append(result)
 
         if len(current_app.config['RECEIVED_RESULTS']) == current_app.config['NUM_REQUESTS']:
-            # TODO: Need to be background procedure...
-            run_aggregation_step(
-                fl_module=current_app.config['MODEL_OBJ'],
-                results=current_app.config['RECEIVED_RESULTS'],
-                path_format=current_app.config['MODEL_PATH'])
+            thread = threading.Thread(
+                target=run_aggregation_step,
+                kwargs={
+                    'fl_module': current_app.config['MODEL_OBJ'],
+                    'results': current_app.config['RECEIVED_RESULTS'],
+                    'path_format': current_app.config['MODEL_PATH'],
+                })
+            thread.daemon = True
+            thread.start()
 
             current_app.config['RECEIVED_RESULTS'] = []
 

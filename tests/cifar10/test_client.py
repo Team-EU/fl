@@ -27,8 +27,10 @@ def dataloader(classes = None):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--classes', type=int, nargs='+', help='class labels for non iid tests')
+    parser.add_argument('--host', help='server host', default='localhost')
+    parser.add_argument('--port', help='server host', default='5000')
     args = parser.parse_args()
-    client = FLClient('http://localhost:5000')
+    client = FLClient(f'http://{args.host}:{args.port}')
     data = dataloader(args.classes)
     for epoch in range(200):
         client.pull(round=epoch)

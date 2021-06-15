@@ -10,7 +10,6 @@ __all__ = ['create_app']
 
 def create_app(fl_module,
                n_requests,
-               n_requests_per_client=None,
                round_timeout=None,
                instance_path=None,
                ):
@@ -23,7 +22,6 @@ def create_app(fl_module,
         MODEL_OBJ=fl_module,
         MODEL_PATH=os.path.join(app.instance_path, 'model-{:05d}.pth'),
         NUM_REQUESTS=n_requests,
-        NUM_REQUESTS_PER_CLIENT=n_requests_per_client,
         ROUND_TIMEOUT=round_timeout,
         RECEIVED_RESULTS=[],
     )

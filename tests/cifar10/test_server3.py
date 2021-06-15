@@ -1,6 +1,6 @@
 import os
-from fl_common import Module
-from fl_server import create_app
+import fl
+from fl.server import create_app
 
 import torch
 import torch.nn as nn
@@ -8,7 +8,8 @@ import torchvision
 import torchvision.transforms as transforms
 from tensorboard_logger import configure, log_value
 
-fl_module = Module()
+fl_module = fl.Module()
+
 
 @fl_module.init
 def init(self):
@@ -22,6 +23,7 @@ def init(self):
     self.flatten = nn.Flatten()
     self.criterion = nn.CrossEntropyLoss()
     self.to('cuda')
+    self.optimizer = torch.optim.SGD(self.parameters(), lr=0.1, weight_decay=1e-4)
 
 
 @fl_module.infer
@@ -37,36 +39,39 @@ def infer(self, x):
 
 @fl_module.server_setup
 def server_setup(self):
-    configure("runs/run-1234")
+    configure("runs/server3")
 
 
 @fl_module.on_training_start
 def on_training_start(self):
-    import torch
     self.to('cuda')
-    self.optimizer = torch.optim.SGD(self.parameters(), lr=0.1, weight_decay=1e-4)
 
 
 @fl_module.training_step
 def training_step(self, dataloader):
+    self.train()
+    self.optimizer.zero_grad()
+
     for inputs, labels in dataloader:
         inputs = inputs.to('cuda')
         labels = labels.to('cuda')
 
         outputs = self(inputs)
         loss = self.criterion(outputs, labels)
-
-        self.optimizer.zero_grad()
         loss.backward()
-        self.optimizer.step()
-    return self
+    return [x.grad for x in self.parameters()]
 
 
 @fl_module.aggregation_step
 def aggregation_step(self, results):
-    with torch.no_grad():
-        for a, b in zip(self.parameters(), results[0].parameters()):
-            a.copy_(b)
+    self.train()
+    self.optimizer.zero_grad()
+    for param, grad in zip(self.parameters(), results[0]):
+        if param.grad is None:
+            param.grad = grad
+        else:
+            param.grad += grad
+    self.optimizer.step()
 
 
 @fl_module.on_aggregation_end
@@ -79,6 +84,8 @@ def on_aggregation_end(self):
     testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
     testloader = torch.utils.data.DataLoader(testset, batch_size=128, shuffle=False, num_workers=os.cpu_count())
 
+    self.eval()
+    loss = 0
     correct = 0
     total = 0
 
@@ -88,11 +95,14 @@ def on_aggregation_end(self):
             labels = labels.to('cuda')
 
             outputs = self(images)
+            loss += self.criterion(outputs, labels).item()
+
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
-    log_value('acc', correct / total, step=self._round)
+    log_value('valid/loss', loss / len(testloader), step=self._round)
+    log_value('valid/acc', correct / total, step=self._round)
 
 
 if __name__ == "__main__":

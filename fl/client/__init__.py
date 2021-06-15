@@ -1,23 +1,12 @@
 import io
 import time
 import requests
-import torch
 import dill
 
 __all__ = ['FLClient']
 
 
-def get_fl_module(url, round=0):
-    url += f"/model?round={round}"
-    response = requests.get(url)
-    while response.status_code != 200:
-        time.sleep(1)
-        response = requests.get(url)
-    stream = io.BytesIO(response.content)
-    return dill.load(stream)
-
-
-def send_result(url, result, round):
+def send_result(url, round, result):
     stream = io.BytesIO()
     dill.dump(result, stream)
     stream.seek(0)
@@ -25,40 +14,55 @@ def send_result(url, result, round):
     r.raise_for_status()
 
 
-class FLClient():
-    def __init__(self, url, round=0, verbose=True):
+class FLClient:
+    def __init__(self, url, verbose=True):
         self.url = url
-        self.round = round
         self.verbose = verbose
+        self.fl_module = None
 
+    @property
+    def round(self):
+        if self.fl_module is None:
+            return -1
+        return self.fl_module._round
+
+    def log(self, *args, **kwargs):
         if self.verbose:
-            print("get the initial fl_module...", end="\t")
-        self.fl_module = get_fl_module(url, self.round)
-        if self.verbose:
-            print("complete!")
+            print(*args, **kwargs)
+
+    def pull(self, round=None):
+        """ Pull the current model
+
+        Args:
+            - round (default: None)
+                - if specified, pull the latest model after the round
+                - if the current server round is less than this round, wait
+        """
+        if round is not None:
+            while True:
+                resp = requests.get(self.url + "/round")
+                data = resp.json()
+                if data['round'] >= round:
+                    break
+                time.sleep(5)
+
+        resp = requests.get(self.url + "/model")
+        self.fl_module = dill.load(io.BytesIO(resp.content))
 
         if self.fl_module._client_setup:
             self.fl_module._client_setup(self.fl_module)
 
     def run(self, train_loader):
-        if self.verbose:
-            print("checking current round...", end="\t")
-        self.fl_module = get_fl_module(self.url, self.round)
-        if self.verbose:
-            print("complete!")
-
-        if self.verbose:
-            print("running...")
         if self.fl_module._on_training_start:
             self.fl_module._on_training_start(self.fl_module)
+
+        self.log(f"[round {self.round:03d}] running...", end='\t')
         result = self.fl_module._training_step(self.fl_module, train_loader)
+        self.log("complete!")
+
         if self.fl_module._on_training_end:
             self.fl_module._on_training_end(self.fl_module)
 
-        if self.verbose:
-            print("sending result...", end="\t")
-        send_result(self.url + '/upload', result, self.round)
-        if self.verbose:
-            print("complete!")
-
-        self.round += 1
+        self.log(f"[round {self.round:03d}] sending result...", end="\t")
+        send_result(self.url + '/upload', self.round, result)
+        self.log("complete!")

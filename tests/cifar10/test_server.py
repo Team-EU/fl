@@ -1,4 +1,6 @@
 import os
+import time
+import argparse
 import fl
 from fl.server import create_app
 
@@ -38,7 +40,8 @@ def infer(self, x):
 
 @fl_module.server_setup
 def server_setup(self):
-    configure("runs/server2")
+    now = time.strftime("%m%d%H%M", time.localtime())
+    configure(os.path.join('runs', f'n{args.n_requests}', now))
 
 
 @fl_module.on_training_start
@@ -67,8 +70,9 @@ def training_step(self, dataloader):
 @fl_module.aggregation_step
 def aggregation_step(self, results):
     with torch.no_grad():
-        for a, b, c in zip(self.parameters(), results[0].parameters(), results[1].parameters()):
-            a.copy_((b + c) / 2)
+        client_params = [x.parameters() for x in results]
+        for main, *branches in zip(self.parameters(), *client_params):
+            main.copy_(sum(branches) / len(branches))
 
 
 @fl_module.on_aggregation_end
@@ -103,8 +107,15 @@ def on_aggregation_end(self):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--host', help='server host', default='localhost')
+    parser.add_argument('--port', help='server port', default=5000, type=int)
+    parser.add_argument('--n_requests', default=1, type=int)
+    args = parser.parse_args()
+
     app = create_app(
         fl_module=fl_module,
-        n_requests=2,
+        n_requests=args.n_requests,
         instance_path=os.path.join(os.getcwd(), 'instance'))
-    app.run()
+
+    app.run(host=args.host, port=args.port)

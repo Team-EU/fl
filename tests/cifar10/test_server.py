@@ -119,4 +119,4 @@ if __name__ == "__main__":
         n_requests=args.n_requests,
         instance_path=os.path.join(os.getcwd(), 'instance'))
 
-    app.run(host=args.host, port=args.port)
+    app.run(host=args.host, port=args.port, threaded=True)

@@ -1,6 +1,7 @@
 import os
 from fl.client import FLClient
 import argparse
+import time
 
 
 def dataloader(classes=None):
@@ -19,7 +20,7 @@ def dataloader(classes=None):
     if classes:
         sidx = [idx for idx, t in enumerate(dataset.targets) if t in classes]
         dataset = torch.utils.data.Subset(dataset, sidx)
-    print(len(dataset))
+
     return torch.utils.data.DataLoader(
         dataset, batch_size=128, shuffle=True, num_workers=os.cpu_count(), pin_memory=True)
 
@@ -29,9 +30,14 @@ if __name__ == "__main__":
     parser.add_argument('--classes', type=int, nargs='+', help='class labels for non iid tests')
     parser.add_argument('--host', help='server host', default='localhost')
     parser.add_argument('--port', help='server port', default='5000')
+    parser.add_argument('--sync', help='if sync version', action='store_true')
     args = parser.parse_args()
     client = FLClient(f'http://{args.host}:{args.port}')
     data = dataloader(args.classes)
     for epoch in range(200):
-        client.pull(round=epoch)
+        if args.sync:
+            client.pull(round=epoch)
+        else:
+            client.pull()
         client.run(data, device='cuda')
+

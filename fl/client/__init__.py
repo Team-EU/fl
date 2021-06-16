@@ -11,7 +11,7 @@ def send_result(url, round, result):
     dill.dump(result, stream)
     stream.seek(0)
     r = requests.post(url, files={'result': stream}, data={'round': round})
-    r.raise_for_status()
+    # r.raise_for_status()
 
 
 class FLClient:

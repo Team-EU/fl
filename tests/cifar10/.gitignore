@@ -1,2 +1,4 @@
 data
 runs
+run_iid.sh
+logs

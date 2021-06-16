@@ -48,8 +48,8 @@ def add_model_communication(app):
         current_round = current_app.config['MODEL_OBJ']._round
         sem.release()
 
-        if current_round != int(request.form['round']):
-            abort(404)
+        # if current_round != int(request.form['round']):
+        #     abort(404)
 
         result = dill.load(request.files['result'].stream)
 

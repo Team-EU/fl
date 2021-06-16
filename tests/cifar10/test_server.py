@@ -117,6 +117,7 @@ if __name__ == "__main__":
     app = create_app(
         fl_module=fl_module,
         n_requests=args.n_requests,
+        round_timeout=30,
         instance_path=os.path.join(os.getcwd(), 'instance'))
 
     app.run(host=args.host, port=args.port, threaded=True)

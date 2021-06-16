@@ -4,7 +4,6 @@
 
 ### IID Sync test 
 #### Server side
-Aggregate per 2 requests
 * from test/cifar10 dir
 * python test_server.py --n_requests 2
 
@@ -29,6 +28,7 @@ Aggregate per 2 requests
 #### Client side
 * from test/cifar10 dir
 * python test_client.py --host test.com --port 5000 --classes 0 1 2 3 4
+
 on other clients
 * from test/cifar10 dir
 * python test_client.py --host test.com --port 5000 --classes 5 6 7 8 9

@@ -50,7 +50,7 @@ class Module(torch.nn.Module):
 
     def server_setup(self, func):
         argspec = inspect.getfullargspec(func)
-        assert argspec.args == ['self']
+        assert argspec.args == ['self', 'app']
         self._server_setup = func
         return func
 

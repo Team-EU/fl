@@ -12,6 +12,15 @@ from tensorboard_logger import configure, log_value
 
 fl_module = fl.Module()
 
+transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616))
+])
+testset = torchvision.datasets.CIFAR10(
+    root='./data', train=False, download=True, transform=transform)
+testloader = torch.utils.data.DataLoader(
+    testset, batch_size=128, shuffle=False, num_workers=os.cpu_count())
+
 
 @fl_module.init
 def init(self):
@@ -24,7 +33,6 @@ def init(self):
     self.pool = nn.MaxPool2d(2, 2)
     self.flatten = nn.Flatten()
     self.criterion = nn.CrossEntropyLoss()
-    self.to('cuda')
 
 
 @fl_module.infer
@@ -39,24 +47,25 @@ def infer(self, x):
 
 
 @fl_module.server_setup
-def server_setup(self):
+def server_setup(self, app):
+    self.to('cuda')
     now = time.strftime("%m%d%H%M", time.localtime())
-    configure(os.path.join('runs', f'n{args.n_requests}', now))
+    configure(os.path.join('runs', f"n{app.config['NUM_REQUESTS']}", now))
 
 
 @fl_module.on_training_start
-def on_training_start(self):
-    import torch
-    self.to('cuda')
-    self.optimizer = torch.optim.SGD(self.parameters(), lr=0.1, weight_decay=1e-4)
+def on_training_start(self, **kwargs):
+    from torch.optim import SGD
+    self.to(kwargs['device'])
+    self.optimizer = SGD(self.parameters(), lr=0.1, weight_decay=1e-4)
 
 
 @fl_module.training_step
-def training_step(self, dataloader):
+def training_step(self, dataloader, **kwargs):
     self.train()
     for inputs, labels in dataloader:
-        inputs = inputs.to('cuda')
-        labels = labels.to('cuda')
+        inputs = inputs.to(kwargs['device'])
+        labels = labels.to(kwargs['device'])
 
         outputs = self(inputs)
         loss = self.criterion(outputs, labels)
@@ -77,14 +86,6 @@ def aggregation_step(self, results):
 
 @fl_module.on_aggregation_end
 def on_aggregation_end(self):
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616))
-    ])
-
-    testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
-    testloader = torch.utils.data.DataLoader(testset, batch_size=128, shuffle=False, num_workers=os.cpu_count())
-
     self.eval()
     loss = 0
     correct = 0

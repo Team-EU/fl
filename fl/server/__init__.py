@@ -33,14 +33,13 @@ def create_app(fl_module,
     except OSError:
         print("use the existing instance:", app.instance_path)
 
-    with app.app_context():
-        checkpoint_model(fl_module, current_app.config['MODEL_PATH'])
-
     app = add_model_viewer(app)
 
     app = add_model_communication(app)
 
-    if fl_module._server_setup:
-        fl_module._server_setup(fl_module)
+    with app.app_context():
+        if fl_module._server_setup:
+            fl_module._server_setup(fl_module, current_app)
+        checkpoint_model(fl_module, current_app.config['MODEL_PATH'])
 
     return app

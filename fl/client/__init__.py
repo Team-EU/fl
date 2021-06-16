@@ -52,16 +52,16 @@ class FLClient:
         if self.fl_module._client_setup:
             self.fl_module._client_setup(self.fl_module)
 
-    def run(self, train_loader):
+    def run(self, train_loader, **kwargs):
         if self.fl_module._on_training_start:
-            self.fl_module._on_training_start(self.fl_module)
+            self.fl_module._on_training_start(self.fl_module, **kwargs)
 
         self.log(f"[round {self.round:03d}] running...", end='\t')
-        result = self.fl_module._training_step(self.fl_module, train_loader)
+        result = self.fl_module._training_step(self.fl_module, train_loader, **kwargs)
         self.log("complete!")
 
         if self.fl_module._on_training_end:
-            self.fl_module._on_training_end(self.fl_module)
+            self.fl_module._on_training_end(self.fl_module, **kwargs)
 
         self.log(f"[round {self.round:03d}] sending result...", end="\t")
         send_result(self.url + '/upload', self.round, result)

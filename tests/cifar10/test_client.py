@@ -3,7 +3,7 @@ from fl.client import FLClient
 import argparse
 
 
-def dataloader(classes = None):
+def dataloader(classes=None):
     import torch
     import torchvision as tv
     transform = tv.transforms.Compose([
@@ -34,4 +34,4 @@ if __name__ == "__main__":
     data = dataloader(args.classes)
     for epoch in range(200):
         client.pull(round=epoch)
-        client.run(data)
+        client.run(data, device='cuda')

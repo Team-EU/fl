@@ -5,7 +5,7 @@
 ### IID Sync test 
 #### Server side
 * from test/cifar10 dir
-* python test_server.py --n_requests 2
+* python test_server.py --host test.com --port 5000 --n_requests 2
 
 #### Client side
 * from test/cifar10 dir
@@ -14,7 +14,7 @@
 ### IID Async test
 #### Server side
 * from test/cifar10 dir
-* python test_server.py --n_requests 2
+* python test_server.py --host test.com --port 5000 --n_requests 2
 
 #### Client side
 * from test/cifar10 dir
@@ -23,7 +23,7 @@
 ### Non-IID Sync test
 #### Server side
 * from test/cifar10 dir
-* python test_server.py --n_requests 2
+* python test_server.py --host test.com --port 5000 --n_requests 2
 
 #### Client side
 * from test/cifar10 dir

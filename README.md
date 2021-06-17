@@ -15,7 +15,7 @@
 * from test/cifar10 dir
 * python test_server.py --host test.com --port 5000 --n_requests 2
 
-#### Client side
+#### Client side (need 2 clients)
 * from test/cifar10 dir
 * python test_client.py --host test.com --port 5000 --sync
 
@@ -24,7 +24,7 @@
 * from test/cifar10 dir
 * python test_server.py --host test.com --port 5000 --n_requests 2
 
-#### Client side
+#### Client side (need multiple clients)
 * from test/cifar10 dir
 * python test_client.py --host test.com --port 5000
 
@@ -33,7 +33,7 @@
 * from test/cifar10 dir
 * python test_server.py --host test.com --port 5000 --n_requests 2
 
-#### Client side
+#### Client side (need 2 clients)
 * from test/cifar10 dir
 * python test_client.py --host test.com --port 5000 --classes 0 1 2 3 4
 

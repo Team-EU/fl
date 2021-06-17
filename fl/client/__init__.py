@@ -10,8 +10,7 @@ def send_result(url, round, result):
     stream = io.BytesIO()
     dill.dump(result, stream)
     stream.seek(0)
-    r = requests.post(url, files={'result': stream}, data={'round': round})
-    # r.raise_for_status()
+    return requests.post(url, files={'result': stream}, data={'round': round})
 
 
 class FLClient:
@@ -28,7 +27,7 @@ class FLClient:
 
     def log(self, *args, **kwargs):
         if self.verbose:
-            print(*args, **kwargs)
+            print(f"[round {self.round:03d}]", *args, **kwargs)
 
     def pull(self, round=None):
         """ Pull the current model
@@ -56,13 +55,12 @@ class FLClient:
         if self.fl_module._on_training_start:
             self.fl_module._on_training_start(self.fl_module, **kwargs)
 
-        self.log(f"[round {self.round:03d}] running...", end='\t')
+        self.log(f"training...")
         result = self.fl_module._training_step(self.fl_module, train_loader, **kwargs)
-        self.log("complete!")
 
         if self.fl_module._on_training_end:
             self.fl_module._on_training_end(self.fl_module, **kwargs)
 
-        self.log(f"[round {self.round:03d}] sending result...", end="\t")
-        send_result(self.url + '/upload', self.round, result)
-        self.log("complete!")
+        self.log("sending result...")
+        resp = send_result(self.url + '/upload', self.round, result)
+        self.log("POST status code:", resp.status_code)

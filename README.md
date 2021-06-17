@@ -50,3 +50,7 @@ on one client (using dataset in label 01234)
 on other clients (using dataset in label 56789)
 * from test/cifar10 dir
 * python test_client.py --host test.com --port 5000 --classes 5 6 7 8 9
+
+### Running tensorboard
+* from test/cifar10 dir
+* tensorboard --logdir runs

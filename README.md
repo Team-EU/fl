@@ -41,9 +41,10 @@ if specifying gpu device
 * python test_server.py --host test.com --port 5000 --n_requests 2
 
 #### Client side (need as musch clients as n_requests in server, in this case 2)
+on one client (using dataset in label 01234)
 * from test/cifar10 dir
 * python test_client.py --host test.com --port 5000 --classes 0 1 2 3 4
 
-on other clients
+on other clients (using dataset in label 56789)
 * from test/cifar10 dir
 * python test_client.py --host test.com --port 5000 --classes 5 6 7 8 9

@@ -20,7 +20,7 @@
 * from test/cifar10 dir
 * python test_server.py --host test.com --port 5000 --n_requests 2
 
-#### Client side (need as musch clients as n_requests in server)
+#### Client side (need as musch clients as n_requests in server, in this case 2)
 * from test/cifar10 dir
 * python test_client.py --host test.com --port 5000 --sync
 if specifying gpu device
@@ -40,7 +40,7 @@ if specifying gpu device
 * from test/cifar10 dir
 * python test_server.py --host test.com --port 5000 --n_requests 2
 
-#### Client side (need as musch clients as n_requests in server)
+#### Client side (need as musch clients as n_requests in server, in this case 2)
 * from test/cifar10 dir
 * python test_client.py --host test.com --port 5000 --classes 0 1 2 3 4
 

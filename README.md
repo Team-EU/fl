@@ -4,6 +4,7 @@
 * CPU: Intel(R) Xeon(R) CPU E5-2620 v4 @ 2.10GHz
 * GPU: TitanXP * 4 / CUDA 11.2
 * OS: Ubuntu 16.04
+* Python: 3.8
 
 ## How to reporduce
 

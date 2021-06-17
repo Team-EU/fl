@@ -2,6 +2,14 @@
 
 ## How to reporduce
 
+### Installing FL package
+* from base dir
+* pip install -e .
+
+### Installing dependencies
+* Necessary dependencies are in requirements.txt (pip install -r requirements.txt)
+* Specified versions in requirements.txt are from actual test ENV
+
 ### IID Sync test 
 #### Server side
 * from test/cifar10 dir

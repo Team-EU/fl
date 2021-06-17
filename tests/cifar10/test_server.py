@@ -112,11 +112,13 @@ if __name__ == "__main__":
     parser.add_argument('--host', help='server host', default='localhost')
     parser.add_argument('--port', help='server port', default=5000, type=int)
     parser.add_argument('--n_requests', default=1, type=int)
+    parser.add_argument('--timeout', default=None, type=int)
     args = parser.parse_args()
 
     app = create_app(
         fl_module=fl_module,
         n_requests=args.n_requests,
+        round_timeout=args.timeout,
         instance_path=os.path.join(os.getcwd(), 'instance'))
 
     app.run(host=args.host, port=args.port, threaded=True)
